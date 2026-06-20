@@ -153,6 +153,9 @@
     background: rgba(41,151,255,0.1); color: var(--accent);
     font-size: 22px; margin-bottom: 16px;
   }
+  .edu-list { margin: 16px 0 0; padding-left: 20px; }
+  .edu-list li { color: var(--text-soft); font-size: 15px; line-height: 1.75; margin-bottom: 10px; }
+  .edu-list li::marker { color: var(--accent); }
   .edu-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .edu-head .edu-badge { margin-bottom: 0; }
   .edu-tag {
@@ -399,7 +402,7 @@
             </div>
             <h3>悉尼大学 (The University of Sydney)</h3>
             <p class="muted">本科 · 软件工程 / 计算机相关专业</p>
-            <p class="body">在校期间系统学习软件工程与计算机科学基础，涵盖编程、数据结构、系统设计等核心课程。（此处为占位描述，可后续补充具体时间、课程与成绩。）</p>
+            <p class="body">在校期间系统地学习了软件工程和计算机科学基础等核心课程；除此之外，还系统地学习了人工智能专业的知识基础。</p>
             <span class="card-link">查看详情 →</span>
           </div>
           <div class="card card--clickable" data-detail="detailMajor" role="button" tabindex="0">
@@ -471,12 +474,28 @@
   </div>
   <div class="wrap detail__body">
     <p class="eyebrow">EDUCATION</p>
-    <h2 class="section-title">悉尼大学 · 详情</h2>
-    <p class="section-sub">这里将展示更完整的教育经历。</p>
-    <div class="detail__placeholder">
-      详情内容占位中。<br>
-      后续可在此补充就读时间、专业课程、<br>
-      项目作品与在校经历等内容。
+    <h2 class="section-title">教育背景</h2>
+
+    <div class="card" style="margin-bottom:22px;">
+      <h3>悉尼大学（The University of Sydney）</h3>
+      <p class="muted">软件工程（Software Engineering）主修 ｜ 计算机科学（Computer Science）辅修　·　2022 年 – 2025 年</p>
+      <ul class="edu-list">
+        <li>系统学习软件工程与计算机科学核心课程，具备扎实的计算机理论基础与软件开发能力。</li>
+        <li>掌握 Python、Java、C 等编程语言，熟悉算法与数据结构等计算机基础知识，具备良好的工程实践能力。</li>
+        <li>熟悉 Agile / Scrum 敏捷开发流程，了解软件项目从需求分析、开发测试到产品交付的完整生命周期。</li>
+        <li>在校期间参与多个团队软件开发项目，积累了需求分析、系统设计、功能开发及团队协作经验。</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>人工智能方向学习与研究</h3>
+      <ul class="edu-list">
+        <li>在人工智能技术快速发展的背景下，主动深入学习人工智能相关课程与前沿技术，并将其作为个人重点研究方向。</li>
+        <li>系统学习机器学习（Machine Learning）、深度学习（Deep Learning）、神经网络（Neural Networks）等人工智能核心理论，建立完整的 AI 知识体系。</li>
+        <li>深入研究大语言模型（LLM）相关技术路线，学习 Transformer 架构、注意力机制（Attention Mechanism）及生成式 AI 的核心原理。</li>
+        <li>持续关注 AI Agent、工作流编排（Workflow）、Harness 架构等前沿方向，理解大模型在记忆、工具调用、任务编排及自动化执行等场景中的应用方式。</li>
+        <li>具备从技术原理、产品设计到实际应用的综合认知能力，能够结合业务需求探索 AI 技术的落地场景与产品价值。</li>
+      </ul>
     </div>
   </div>
 </div>
