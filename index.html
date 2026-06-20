@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>哲宇联个人网站</title>
+<style>
+  /* ===== 全局变量 ===== */
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --text: #1d1d1f;
+    --text-soft: #6e6e73;
+    --line: #e3e3e6;
+    --accent: #2997ff;        /* 苹果风浅蓝强调色 */
+    --card: #ffffff;
+    --shadow: 0 4px 24px rgba(0,0,0,0.06);
+    --shadow-hover: 0 14px 40px rgba(0,0,0,0.12);
+    --radius: 20px;
+    --nav-h: 56px;
+  }
+
+  /* ===== 基础重置 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;            /* 关键：禁止整页滚动，区域间不再被滚轮带走 */
+  }
+
+  /* ===== 顶部导航栏 ===== */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(16px, 5vw, 48px);
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__brand { font-size: 17px; font-weight: 600; letter-spacing: .2px; }
+  .nav__links { display: flex; gap: clamp(14px, 3vw, 34px); list-style: none; }
+  .nav__links a {
+    text-decoration: none; color: var(--text-soft);
+    font-size: 14px; cursor: pointer; transition: color .25s ease;
+  }
+  .nav__links a:hover { color: var(--text); }
+  .nav__links a.active { color: var(--accent); font-weight: 600; }
+
+  /* 移动端汉堡按钮 */
+  .nav__toggle {
+    display: none; background: none; border: none; cursor: pointer;
+    width: 30px; height: 30px; position: relative;
+  }
+  .nav__toggle span {
+    position: absolute; left: 4px; right: 4px; height: 2px;
+    background: var(--text); transition: .3s ease;
+  }
+  .nav__toggle span:nth-child(1) { top: 9px; }
+  .nav__toggle span:nth-child(2) { top: 15px; }
+  .nav__toggle span:nth-child(3) { top: 21px; }
+  .nav.open .nav__toggle span:nth-child(1) { top: 15px; transform: rotate(45deg); }
+  .nav.open .nav__toggle span:nth-child(2) { opacity: 0; }
+  .nav.open .nav__toggle span:nth-child(3) { top: 15px; transform: rotate(-45deg); }
+
+  /* ===== 面板系统 ===== */
+  /* 每个区域都是一个铺满屏幕的“面板”，默认隐藏，只有当前激活的可见 */
+  .panels { position: fixed; inset: 0; }
+  .panel {
+    position: absolute; inset: 0;
+    padding-top: var(--nav-h);
+    overflow-y: auto;            /* 内容超长时只在面板内部滚动，不会窜到别的区域 */
+    overflow-x: hidden;
+    opacity: 0; visibility: hidden;
+    transform: translateY(24px);
+    transition: opacity .5s ease, transform .5s ease, visibility .5s;
+    -webkit-overflow-scrolling: touch;
+  }
+  .panel.active { opacity: 1; visibility: visible; transform: translateY(0); }
+
+  /* ===== 通用区块容器 ===== */
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
+  .section-pad { padding: clamp(50px, 8vw, 90px) 0 clamp(60px, 10vw, 110px); }
+  .eyebrow {
+    color: var(--accent); font-size: 14px; font-weight: 600;
+    letter-spacing: .5px; margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: clamp(28px, 4.5vw, 44px); font-weight: 700;
+    letter-spacing: -.5px; margin-bottom: 14px;
+  }
+  .section-sub { color: var(--text-soft); font-size: 17px; margin-bottom: 48px; }
+  .bg-soft { background: var(--bg-soft); }
+
+  /* ===== Hero / 个人信息 ===== */
+  .hero {
+    min-height: 100%; display: flex; align-items: flex-start;  /* 内容靠上，落在屏幕上三分之一处 */
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, #f5f9ff 0%, #ffffff 55%);
+  }
+  .hero .wrap { padding-top: clamp(40px, 13vh, 130px); padding-bottom: 50px; }
+  .hero__name {
+    font-size: clamp(44px, 9vw, 92px); font-weight: 700;
+    letter-spacing: -1.5px; margin-bottom: 18px;
+    background: linear-gradient(90deg, #1d1d1f, #2997ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero__tag { font-size: clamp(18px, 2.6vw, 26px); color: var(--text-soft); margin-bottom: 34px; }
+  .hero__meta {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 14px; margin-bottom: 44px;
+  }
+  .pill {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 18px;
+    font-size: 14px; color: var(--text);
+  }
+  .pill b { font-weight: 600; }
+  .skills {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+    max-width: 760px; margin: 0 auto;
+  }
+  .skill-chip {
+    background: rgba(41,151,255,0.08); color: var(--accent);
+    border: 1px solid rgba(41,151,255,0.25);
+    border-radius: 999px; padding: 9px 20px; font-size: 15px; font-weight: 500;
+  }
+
+  /* ===== 卡片通用 ===== */
+  .grid { display: grid; gap: 22px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 32px;
+    box-shadow: var(--shadow);
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); }
+  .card h3 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .card .muted { color: var(--text-soft); font-size: 15px; }
+  .card .body { margin-top: 14px; color: var(--text-soft); font-size: 15px; }
+
+  /* ===== 教育经历 ===== */
+  .edu-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(41,151,255,0.1); color: var(--accent);
+    font-size: 22px; margin-bottom: 16px;
+  }
+  .edu-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .edu-head .edu-badge { margin-bottom: 0; }
+  .edu-tag {
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    background: rgba(41,151,255,0.1);
+    border-radius: 999px; padding: 5px 14px;
+  }
+
+  /* 可点击卡片 */
+  .card--clickable { cursor: pointer; position: relative; }
+  .card-link {
+    display: inline-block; margin-top: 18px;
+    color: var(--accent); font-size: 15px; font-weight: 600;
+    transition: transform .25s ease;
+  }
+  .card--clickable:hover .card-link { transform: translateX(4px); }
+  .card--clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ===== 详情页（从右侧滑入的全屏页）===== */
+  .detail {
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--bg);
+    transform: translateX(100%); opacity: 0; visibility: hidden;
+    transition: transform .45s ease, opacity .45s ease, visibility .45s;
+    overflow-y: auto;
+  }
+  .detail.show { transform: translateX(0); opacity: 1; visibility: visible; }
+  .detail__bar {
+    position: sticky; top: 0; z-index: 1;
+    height: var(--nav-h); display: flex; align-items: center;
+    padding: 0 clamp(16px, 5vw, 48px);
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .detail__back {
+    border: none; background: none; cursor: pointer;
+    font-size: 15px; color: var(--accent); font-weight: 500;
+    padding: 8px 4px;
+  }
+  .detail__body { padding: clamp(40px, 7vw, 80px) 0 90px; }
+  .detail__placeholder {
+    border: 1px dashed var(--line); border-radius: var(--radius);
+    background: var(--bg-soft); color: var(--text-soft);
+    text-align: center; padding: clamp(50px, 9vw, 90px) 28px;
+    font-size: 16px; line-height: 1.8;
+  }
+
+  /* ===== 联系方式 ===== */
+  .contact-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .contact-item {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 18px 22px;
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .contact-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .contact-item .ico {
+    width: 42px; height: 42px; flex: none; border-radius: 12px;
+    background: var(--bg-soft); display: flex; align-items: center;
+    justify-content: center; font-size: 18px;
+  }
+  .contact-item .k { font-size: 13px; color: var(--text-soft); }
+  .contact-item .v { font-size: 16px; font-weight: 500; }
+
+  /* ===== 文章模块 ===== */
+  .articles-box {
+    text-align: center; border: 1px dashed var(--line);
+    border-radius: var(--radius); background: var(--card);
+    padding: clamp(40px, 7vw, 72px) 28px;
+  }
+  .articles-box p { color: var(--text-soft); max-width: 520px; margin: 16px auto 28px; }
+  .btn {
+    border: none; cursor: pointer; font-size: 16px; font-weight: 500;
+    background: var(--accent); color: #fff;
+    padding: 13px 30px; border-radius: 999px;
+    transition: transform .2s ease, background .2s ease, box-shadow .3s ease;
+  }
+  .btn:hover { background: #1a86f0; transform: translateY(-2px); box-shadow: 0 8px 22px rgba(41,151,255,.35); }
+  .btn:active { transform: translateY(0); }
+
+  /* ===== 心得提交：按钮区 / 小卡片 ===== */
+  .detail__tools { margin: 26px 0 6px; }
+  .insight-grid {
+    display: grid; gap: 16px; margin-top: 28px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  .insight-empty { color: var(--text-soft); font-size: 15px; margin-top: 24px; }
+  .insight-card {
+    position: relative; cursor: pointer; text-align: left;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 22px;
+    box-shadow: var(--shadow);
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .insight-del {
+    position: absolute; top: 10px; right: 10px;
+    width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--bg-soft); color: var(--text-soft);
+    font-size: 16px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s ease, color .2s ease;
+  }
+  .insight-del:hover { background: #ffe3e3; color: #d6336c; }
+  .insight-card h4 { padding-right: 28px; }   /* 给删除按钮留位 */
+  .btn-danger { background: #e03131; }
+  .btn-danger:hover { background: #c92a2a; box-shadow: 0 8px 22px rgba(224,49,49,.35); }
+  .insight-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+  .insight-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .insight-card p { color: var(--text-soft); font-size: 14px; margin-bottom: 12px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .insight-card .go { color: var(--accent); font-size: 13px; font-weight: 600; }
+
+  /* ===== 表单弹窗 ===== */
+  .form-field { text-align: left; margin-bottom: 16px; }
+  .form-field label { display: block; font-size: 13px; color: var(--text-soft); margin-bottom: 6px; }
+  .form-field input {
+    width: 100%; padding: 11px 14px; font-size: 15px; font-family: inherit;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--bg-soft);
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .form-field input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .form-error { min-height: 18px; color: #d6336c; font-size: 13px; text-align: left; margin: -6px 0 8px; }
+  .modal__foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  .btn-ghost { background: var(--bg-soft); color: var(--text); }
+  .btn-ghost:hover { background: #ececef; box-shadow: none; }
+  .btn[disabled] { opacity: .6; cursor: default; }
+
+  /* ===== 轻提示 toast ===== */
+  .toast {
+    position: fixed; left: 50%; bottom: 28px;
+    transform: translateX(-50%) translateY(20px);
+    background: #1d1d1f; color: #fff; padding: 12px 22px;
+    border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center;
+    opacity: 0; pointer-events: none; z-index: 300;
+    transition: opacity .3s ease, transform .3s ease;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== 模态弹窗 ===== */
+  .modal {
+    position: fixed; inset: 0; z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.32);
+    backdrop-filter: blur(4px); padding: 24px;
+  }
+  .modal.show { display: flex; animation: fadeIn .25s ease; }
+  .modal__card {
+    background: #fff; border-radius: 22px; max-width: 380px; width: 100%;
+    padding: 34px 30px; text-align: center; box-shadow: 0 24px 70px rgba(0,0,0,.25);
+    animation: pop .28s ease;
+  }
+  .modal__card h4 { font-size: 20px; margin-bottom: 10px; }
+  .modal__card p { color: var(--text-soft); margin-bottom: 24px; font-size: 15px; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* ===== 页脚 ===== */
+  .footer {
+    text-align: center; color: var(--text-soft);
+    font-size: 13px; padding: 40px 20px 30px; margin-top: 30px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 760px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .contact-list { grid-template-columns: 1fr; }
+    .nav__toggle { display: block; }
+    .nav__links {
+      position: fixed; top: var(--nav-h); left: 0; right: 0;
+      flex-direction: column; gap: 0;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+      max-height: 0; overflow: hidden; transition: max-height .35s ease;
+    }
+    .nav.open .nav__links { max-height: 320px; }
+    .nav__links li { width: 100%; }
+    .nav__links a { display: block; padding: 16px 28px; border-top: 1px solid var(--line); font-size: 16px; }
+    .nav__links a.active { color: var(--accent); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 导航栏（唯一切换区域的入口）===== -->
+<header class="nav" id="nav">
+  <div class="nav__brand">哲宇联</div>
+  <ul class="nav__links" id="navLinks">
+    <li><a data-target="info" class="active">个人信息</a></li>
+    <li><a data-target="education">个人经历</a></li>
+    <li><a data-target="contact">个人联系方式</a></li>
+    <li><a data-target="articles">个人文章发表</a></li>
+  </ul>
+  <button class="nav__toggle" id="navToggle" aria-label="菜单">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<main class="panels">
+
+  <!-- ===== 1. 个人信息 / Hero ===== -->
+  <section id="info" class="panel active">
+    <div class="hero">
+      <div class="wrap">
+        <h1 class="hero__name">连哲语</h1>
+        <p class="hero__tag">AI 产品经理 · 用产品思维连接技术与人</p>
+
+        <div class="hero__meta">
+          <span class="pill"><b>年龄</b>　<span id="age">—</span> 岁</span>
+          <span class="pill"><b>性别</b>　男</span>
+          <span class="pill"><b>手机</b>　159 0464 2518</span>
+          <span class="pill"><b>邮箱</b>　5059136414@qq.com</span>
+          <span class="pill"><b>微信</b>　159 0464 2518</span>
+        </div>
+
+        <div class="skills">
+          <span class="skill-chip">AI 产品经理</span>
+          <span class="skill-chip">AI 工具使用</span>
+          <span class="skill-chip">Agent / Harness 学习与实践</span>
+          <span class="skill-chip">Vibe Coding</span>
+          <span class="skill-chip">软件工程基础</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 教育经历 ===== -->
+  <section id="education" class="panel bg-soft">
+    <div class="section-pad">
+      <div class="wrap">
+        <p class="eyebrow">EXPERIENCE</p>
+        <h2 class="section-title">个人经历</h2>
+        <p class="section-sub">扎实的工程基础，是产品判断力的底层支撑。</p>
+
+        <div class="grid grid-2">
+          <div class="card card--clickable" data-detail="detailEdu" role="button" tabindex="0">
+            <div class="edu-head">
+              <div class="edu-badge">🎓</div>
+              <span class="edu-tag">教育经历</span>
+            </div>
+            <h3>悉尼大学 (The University of Sydney)</h3>
+            <p class="muted">本科 · 软件工程 / 计算机相关专业</p>
+            <p class="body">在校期间系统学习软件工程与计算机科学基础，涵盖编程、数据结构、系统设计等核心课程。（此处为占位描述，可后续补充具体时间、课程与成绩。）</p>
+            <span class="card-link">查看详情 →</span>
+          </div>
+          <div class="card card--clickable" data-detail="detailMajor" role="button" tabindex="0">
+            <div class="edu-badge">📚</div>
+            <h3>AI 知识库</h3>
+            <p class="muted">软件工程基础 · AI 应用实践</p>
+            <p class="body">结合工程背景与对 AI 产品的兴趣，持续学习 Agent、Harness 与 AI 工具链。（此处为占位描述，可后续补充研究方向与项目经历。）</p>
+            <span class="card-link">查看详情 →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 个人联系方式 ===== -->
+  <section id="contact" class="panel">
+    <div class="section-pad">
+      <div class="wrap">
+        <p class="eyebrow">CONTACT</p>
+        <h2 class="section-title">个人联系方式</h2>
+        <p class="section-sub">欢迎通过以下任意方式与我联系。</p>
+
+        <div class="contact-list">
+          <div class="contact-item">
+            <div class="ico">📱</div>
+            <div><div class="k">手机号</div><div class="v">159 0464 2518</div></div>
+          </div>
+          <div class="contact-item">
+            <div class="ico">💬</div>
+            <div><div class="k">微信</div><div class="v">159 0464 2518</div></div>
+          </div>
+          <div class="contact-item">
+            <div class="ico">✉️</div>
+            <div><div class="k">邮箱</div><div class="v">5059136414@qq.com</div></div>
+          </div>
+          <div class="contact-item">
+            <div class="ico">🐙</div>
+            <div><div class="k">GitHub</div><div class="v">zheyulian336@gmail.com</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 个人文章发表 ===== -->
+  <section id="articles" class="panel bg-soft">
+    <div class="section-pad">
+      <div class="wrap">
+        <p class="eyebrow">ARTICLES</p>
+        <h2 class="section-title">个人文章发表</h2>
+        <p class="section-sub">记录思考，沉淀方法论。</p>
+
+        <div class="detail__tools">
+          <button class="btn" id="addArticleBtn">＋ 添加文章</button>
+        </div>
+        <div class="insight-grid" id="articleGrid"></div>
+        <p class="insight-empty" id="articleEmpty">文章内容暂未发布，后续可在这里添加人人都是产品经理、公众号或其他平台文章链接。</p>
+      </div>
+    </div>
+    <footer class="footer">© <span id="year"></span> 哲宇联个人网站 · 由连哲语创建</footer>
+  </section>
+
+</main>
+
+<!-- ===== 教育经历详情页（占位）===== -->
+<div class="detail" id="detailEdu">
+  <div class="detail__bar">
+    <button class="detail__back" data-back>← 返回</button>
+  </div>
+  <div class="wrap detail__body">
+    <p class="eyebrow">EDUCATION</p>
+    <h2 class="section-title">悉尼大学 · 详情</h2>
+    <p class="section-sub">这里将展示更完整的教育经历。</p>
+    <div class="detail__placeholder">
+      详情内容占位中。<br>
+      后续可在此补充就读时间、专业课程、<br>
+      项目作品与在校经历等内容。
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI 知识库详情页（占位）===== -->
+<div class="detail" id="detailMajor">
+  <div class="detail__bar">
+    <button class="detail__back" data-back>← 返回</button>
+  </div>
+  <div class="wrap detail__body">
+    <p class="eyebrow">DETAIL</p>
+    <h2 class="section-title">AI 知识库 · 详情</h2>
+    <p class="section-sub">收集对 AI 产品的心得，以及网页式讲解链接。</p>
+
+    <div class="detail__tools">
+      <button class="btn" id="addInsightBtn">＋ 心得提交</button>
+      <button class="btn btn-ghost" id="settingsBtn" style="margin-left:10px;">作者设置</button>
+    </div>
+
+    <div class="insight-grid" id="insightGrid"></div>
+    <p class="insight-empty" id="insightEmpty">还没有提交的心得，点击上方按钮添加第一条吧。</p>
+  </div>
+</div>
+
+<!-- ===== 作者设置（GitHub 令牌等，仅存本机浏览器）===== -->
+<div class="modal" id="settingsModal">
+  <div class="modal__card" style="max-width:470px;text-align:left;">
+    <h4 style="text-align:center;">作者设置 · GitHub</h4>
+    <p style="font-size:13px;color:var(--text-soft);margin-bottom:16px;">
+      以下信息只保存在你这台电脑的浏览器里，<b>不会写进网页代码</b>，访客看不到。
+      建议使用「细粒度令牌」，仅授权本仓库的 Contents 读写权限。
+    </p>
+    <div class="form-field"><label for="cfgOwner">GitHub 用户名</label><input id="cfgOwner" type="text" placeholder="例如 zheyulian" /></div>
+    <div class="form-field"><label for="cfgRepo">仓库名</label><input id="cfgRepo" type="text" placeholder="例如 my-website" /></div>
+    <div class="form-field"><label for="cfgBranch">分支</label><input id="cfgBranch" type="text" placeholder="main" /></div>
+    <div class="form-field"><label for="cfgToken">访问令牌 (Personal Access Token)</label><input id="cfgToken" type="password" placeholder="github_pat_... 或 ghp_..." /></div>
+    <p class="form-error" id="cfgMsg"></p>
+    <div class="modal__foot">
+      <button class="btn btn-ghost" id="cfgCancel">取消</button>
+      <button class="btn" id="cfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 删除二次确认 ===== -->
+<div class="modal" id="confirmModal">
+  <div class="modal__card">
+    <h4>删除心得</h4>
+    <p>确定要删除这张心得卡片吗？此操作无法撤销。</p>
+    <div class="modal__foot">
+      <button class="btn btn-ghost" id="confirmNo">取消</button>
+      <button class="btn btn-danger" id="confirmYes">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 卡片提交表单（知识库 / 文章发表 共用）===== -->
+<div class="modal" id="cardModal">
+  <div class="modal__card" style="max-width:420px;text-align:left;">
+    <h4 style="text-align:center;" id="formTitle">提交</h4>
+    <div class="form-field">
+      <label id="lblName" for="cardName">名称</label>
+      <input id="cardName" type="text" />
+    </div>
+    <div class="form-field">
+      <label id="lblIntro" for="cardIntro">简介</label>
+      <input id="cardIntro" type="text" />
+    </div>
+    <div class="form-field">
+      <label id="lblLink" for="cardLink">链接</label>
+      <input id="cardLink" type="text" />
+    </div>
+    <p class="form-error" id="cardError"></p>
+    <div class="modal__foot">
+      <button class="btn btn-ghost" id="cardCancel">取消</button>
+      <button class="btn" id="cardSubmit">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- 轻提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===== 自动计算年龄（基于 2002 年出生）=====
+  (function () {
+    var now = new Date();
+    document.getElementById('age').textContent = now.getFullYear() - 2002;
+    document.getElementById('year').textContent = now.getFullYear();
+  })();
+
+  // ===== 面板切换 =====
+  var nav = document.getElementById('nav');
+  var links = document.querySelectorAll('#navLinks a');
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+  var order = ['info', 'education', 'contact', 'articles'];  // 区域顺序
+  var current = 0;
+
+  function showPanel(id) {
+    var idx = order.indexOf(id);
+    if (idx === -1) return;
+    current = idx;
+    panels.forEach(function (p) {
+      p.classList.toggle('active', p.id === id);
+      if (p.id === id) p.scrollTop = 0;   // 切换时回到面板顶部
+    });
+    links.forEach(function (a) {
+      a.classList.toggle('active', a.getAttribute('data-target') === id);
+    });
+  }
+  // 是否有详情页处于打开状态（打开时禁止底层面板切换）
+  function detailOpen() { return !!document.querySelector('.detail.show'); }
+
+  // 按方向切换（dir = 1 下一页 / -1 上一页）
+  function step(dir) {
+    if (detailOpen()) return;             // 详情页打开时不切换底层面板
+    var next = Math.min(order.length - 1, Math.max(0, current + dir));
+    if (next !== current) showPanel(order[next]);
+  }
+
+  links.forEach(function (a) {
+    a.addEventListener('click', function () {
+      showPanel(a.getAttribute('data-target'));
+      nav.classList.remove('open');       // 收起移动端菜单
+    });
+  });
+
+  // ===== 鼠标按住左右拖动切换 =====
+  var stage = document.querySelector('.panels');
+  var dragging = false, startX = 0, startY = 0, moved = false;
+  var DRAG_THRESHOLD = 80;                 // 触发切换的最小水平距离
+
+  stage.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true; moved = false;
+    startX = e.clientX; startY = e.clientY;
+  });
+  stage.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    if (Math.abs(e.clientX - startX) > 8) moved = true;
+  });
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    var dx = e.clientX - startX, dy = e.clientY - startY;
+    // 水平位移足够、且明显大于垂直位移时才切换（避免与上下滚动冲突）
+    if (Math.abs(dx) > DRAG_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+      if (detailOpen()) {
+        if (dx > 0) closeAllDetails();     // 详情页内：向右拖 → 返回
+      } else {
+        step(dx < 0 ? 1 : -1);            // 向左拖 → 下一页；向右拖 → 上一页
+      }
+    }
+  }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', function () { dragging = false; });
+  // 拖动时不选中文字
+  stage.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+  // ===== 触控板双指左右滑动切换（Mac / 横向滚轮）=====
+  // 思路：把一连串横向滚轮事件（手指滑动 + 抬手后的惯性）当作“一次手势”。
+  // 一次手势只跳一页；只有当事件流停止一小段时间（视为手指已抬起、惯性结束），
+  // 才重新允许下一次滑动跳页 —— 即“松手后再滑才能再跳”。
+  var wheelAcc = 0, wheelArmed = true, gestureTimer = null;
+  var FIRE = 40;          // 触发一次切换所需的水平累计距离
+  var LIFT_GAP = 140;     // 事件停止超过该毫秒数，视为已松手，重新武装
+  window.addEventListener('wheel', function (e) {
+    // 只处理“横向为主”的滑动；纵向滑动仍用于面板内部滚动
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+
+    // 只要还在持续收到事件，就说明手指未抬起 / 惯性未结束 —— 不断推迟“松手”判定
+    clearTimeout(gestureTimer);
+    gestureTimer = setTimeout(function () {
+      wheelArmed = true;   // 事件流停止 = 松手，重新允许下一次跳页
+      wheelAcc = 0;
+    }, LIFT_GAP);
+
+    if (!wheelArmed) return;   // 本次手势已经跳过一页，忽略其余事件
+
+    wheelAcc += e.deltaX;
+    if (Math.abs(wheelAcc) > FIRE) {
+      if (detailOpen()) {
+        // 详情页内：从左往右滑（wheelAcc < 0）触发返回
+        if (wheelAcc < 0) closeAllDetails();
+      } else {
+        step(wheelAcc > 0 ? 1 : -1);   // 向左滑 → 下一页；向右滑 → 上一页
+      }
+      wheelAcc = 0;
+      wheelArmed = false;            // 本次手势锁定，等松手后才能再次触发
+    }
+  }, { passive: false });
+
+  // ===== 移动端导航展开 / 收起 =====
+  document.getElementById('navToggle').addEventListener('click', function () {
+    nav.classList.toggle('open');
+  });
+
+  // ===== 卡片详情页（通用：data-detail 指向对应详情页 id）=====
+  var detailOrigin = 'education';          // 记住进入详情页前所在的面板
+  function openDetail(id) {
+    var view = document.getElementById(id);
+    if (!view) return;
+    detailOrigin = order[current];
+    view.classList.add('show'); view.scrollTop = 0;
+  }
+  function closeAllDetails() {
+    document.querySelectorAll('.detail.show').forEach(function (v) { v.classList.remove('show'); });
+    showPanel(detailOrigin);              // 返回时停留在进入前的面板（个人经历）
+  }
+  document.querySelectorAll('.card--clickable').forEach(function (card) {
+    var target = card.getAttribute('data-detail');
+    card.addEventListener('click', function () { openDetail(target); });
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(target); }
+    });
+  });
+  document.querySelectorAll('[data-back]').forEach(function (b) {
+    b.addEventListener('click', closeAllDetails);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAllDetails(); });
+
+  // ===== 卡片表单（知识库与文章发表共用一套结构）=====
+  var cardModal = document.getElementById('cardModal');
+  var fName = document.getElementById('cardName');
+  var fIntro = document.getElementById('cardIntro');
+  var fLink = document.getElementById('cardLink');
+  var fError = document.getElementById('cardError');
+  var fSubmit = document.getElementById('cardSubmit');
+  var activeCol = null;                        // 当前正在添加的集合
+
+  function openForm(col) {
+    activeCol = col;
+    document.getElementById('formTitle').textContent = col.opts.title;
+    document.getElementById('lblName').textContent = col.opts.nameLabel;
+    document.getElementById('lblIntro').textContent = col.opts.introLabel;
+    document.getElementById('lblLink').textContent = col.opts.linkLabel;
+    fName.placeholder = col.opts.namePh; fIntro.placeholder = col.opts.introPh; fLink.placeholder = col.opts.linkPh;
+    fName.value = ''; fIntro.value = ''; fLink.value = ''; fError.textContent = '';
+    cardModal.classList.add('show');
+    setTimeout(function () { fName.focus(); }, 50);
+  }
+  function closeForm() { cardModal.classList.remove('show'); }
+  document.getElementById('cardCancel').addEventListener('click', closeForm);
+  cardModal.addEventListener('click', function (e) { if (e.target === cardModal) closeForm(); });
+
+  // 补全协议：用户没写 http(s):// 时默认补 https://
+  function normalizeUrl(u) {
+    u = u.trim();
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    return u;
+  }
+  // 链接格式校验：必须是 http/https，且域名含有效后缀
+  function isValidUrl(u) {
+    try {
+      var url = new URL(u);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+      return /^[^\s.]+(\.[^\s.]+)+$/.test(url.hostname);   // 形如 a.b 的域名
+    } catch (e) { return false; }
+  }
+  // 真实可达性探测：能连通则有效，无法访问 / 超时则视为无效
+  function probeUrl(u) {
+    return new Promise(function (resolve) {
+      var done = false;
+      var timer = setTimeout(function () { if (!done) { done = true; resolve(false); } }, 7000);
+      fetch(u, { mode: 'no-cors' })
+        .then(function () { if (!done) { done = true; clearTimeout(timer); resolve(true); } })
+        .catch(function () { if (!done) { done = true; clearTimeout(timer); resolve(false); } });
+    });
+  }
+
+  // ===== 轻提示 =====
+  var toastEl = document.getElementById('toast'), toastTimer;
+  function toast(msg, ms) {
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, ms || 3600);
+  }
+
+  // ===== 作者设置（GitHub 配置，仅存本机浏览器）=====
+  var CFG_KEY = 'zhyl_gh_cfg';
+  var cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch (e) { cfg = {}; }
+  function cfgReady() { return !!(cfg.owner && cfg.repo && cfg.token); }
+  function dataBranch() { return cfg.branch || 'main'; }
+
+  var settingsModal = document.getElementById('settingsModal');
+  var cfgMsg = document.getElementById('cfgMsg');
+  function openSettings() {
+    document.getElementById('cfgOwner').value = cfg.owner || '';
+    document.getElementById('cfgRepo').value = cfg.repo || '';
+    document.getElementById('cfgBranch').value = cfg.branch || 'main';
+    document.getElementById('cfgToken').value = cfg.token || '';
+    cfgMsg.textContent = '';
+    settingsModal.classList.add('show');
+  }
+  function closeSettings() { settingsModal.classList.remove('show'); }
+  document.getElementById('settingsBtn').addEventListener('click', openSettings);
+  document.getElementById('cfgCancel').addEventListener('click', closeSettings);
+  settingsModal.addEventListener('click', function (e) { if (e.target === settingsModal) closeSettings(); });
+  document.getElementById('cfgSave').addEventListener('click', function () {
+    cfg = {
+      owner: document.getElementById('cfgOwner').value.trim(),
+      repo: document.getElementById('cfgRepo').value.trim(),
+      branch: document.getElementById('cfgBranch').value.trim() || 'main',
+      token: document.getElementById('cfgToken').value.trim()
+    };
+    if (!cfg.owner || !cfg.repo || !cfg.token) { cfgMsg.textContent = '用户名、仓库名、令牌都要填写。'; return; }
+    try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {}
+    closeSettings();
+    toast('已保存设置，提交将写入 GitHub');
+    insightsCol.load(); articlesCol.load();   // 用新配置重新读取
+  });
+
+  // ===== GitHub API 读写（按文件路径操作）=====
+  function b64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+  function b64Decode(b64) { return decodeURIComponent(escape(atob(b64.replace(/\n/g, '')))); }
+  function ghUrl(path) {
+    return 'https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + encodeURIComponent(path);
+  }
+  function ghHeaders() { return { 'Authorization': 'Bearer ' + cfg.token, 'Accept': 'application/vnd.github+json' }; }
+  function ghGet(path) {
+    return fetch(ghUrl(path) + '?ref=' + encodeURIComponent(dataBranch()) + '&t=' + Date.now(), { headers: ghHeaders() })
+      .then(function (r) {
+        if (r.status === 404) return { sha: null, list: [] };       // 文件还不存在
+        if (!r.ok) return r.json().then(function (e) { throw new Error(e.message || ('读取失败 ' + r.status)); });
+        return r.json().then(function (j) {
+          var list; try { list = JSON.parse(b64Decode(j.content)); } catch (e) { list = []; }
+          return { sha: j.sha, list: Array.isArray(list) ? list : [] };
+        });
+      });
+  }
+  function ghPut(path, list, sha, msg) {
+    var body = { message: msg, content: b64Encode(JSON.stringify(list, null, 2) + '\n'), branch: dataBranch() };
+    if (sha) body.sha = sha;
+    return fetch(ghUrl(path), { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) })
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (e) { throw new Error(e.message || ('提交失败 ' + r.status)); });
+        return r.json();
+      });
+  }
+
+  // ===== 删除二次确认（两套集合共用）=====
+  var confirmModal = document.getElementById('confirmModal');
+  var pendingDelete = null;                    // { col, id }
+  function askDelete(col, id) { pendingDelete = { col: col, id: id }; confirmModal.classList.add('show'); }
+  function closeConfirm() { confirmModal.classList.remove('show'); pendingDelete = null; }
+  document.getElementById('confirmNo').addEventListener('click', closeConfirm);
+  confirmModal.addEventListener('click', function (e) { if (e.target === confirmModal) closeConfirm(); });
+  document.getElementById('confirmYes').addEventListener('click', function () {
+    var p = pendingDelete; closeConfirm();
+    if (p) p.col.remove(p.id);
+  });
+
+  // ===== 可复用的卡片集合（知识库、文章发表共用同一套逻辑）=====
+  function uid() { return Date.now() + '_' + Math.random().toString(36).slice(2, 7); }
+  function createCollection(opts) {
+    var col = { opts: opts, list: [] };
+    function persist() { try { localStorage.setItem(opts.localKey, JSON.stringify(col.list)); } catch (e) {} }
+    function ensureIds() { col.list.forEach(function (it) { if (it && it.id == null) it.id = uid(); }); }
+
+    function buildCard(item) {
+      var card = document.createElement('div');
+      card.className = 'insight-card';
+      var del = document.createElement('button');
+      del.className = 'insight-del'; del.type = 'button'; del.title = '删除'; del.textContent = '×';
+      del.addEventListener('click', function (e) { e.stopPropagation(); askDelete(col, item.id); });
+      var h = document.createElement('h4');
+      var p = document.createElement('p');
+      var go = document.createElement('span');
+      h.textContent = item.name; p.textContent = item.intro;
+      go.className = 'go'; go.textContent = opts.openLabel;
+      card.appendChild(del); card.appendChild(h); card.appendChild(p); card.appendChild(go);
+      card.addEventListener('click', function () { window.open(item.url, '_blank', 'noopener'); });
+      return card;
+    }
+    col.render = function () {
+      opts.grid.innerHTML = '';
+      col.list.forEach(function (item) { if (item && item.name && item.url) opts.grid.appendChild(buildCard(item)); });
+      if (opts.empty) opts.empty.style.display = opts.grid.children.length ? 'none' : '';
+    };
+    // 读取展示数据：优先读仓库里的文件；读不到（本地 file://）则用本机副本
+    col.load = function () {
+      fetch(opts.path + '?t=' + Date.now()).then(function (r) {
+        if (!r.ok) throw 0; return r.json();
+      }).then(function (list) {
+        col.list = Array.isArray(list) ? list : [];
+        ensureIds(); persist(); col.render();
+      }).catch(function () {
+        var saved = null; try { saved = JSON.parse(localStorage.getItem(opts.localKey)); } catch (e) {}
+        col.list = Array.isArray(saved) ? saved : [];
+        ensureIds(); col.render();
+      });
+    };
+    col.add = function (name, intro, url) {
+      var item = { id: uid(), name: name, intro: intro, url: url };
+      if (cfgReady()) {
+        toast('正在提交到 GitHub…');
+        ghGet(opts.path).then(function (res) {
+          var list = res.list.slice(); list.push(item);
+          return ghPut(opts.path, list, res.sha, 'Add ' + opts.commit + ': ' + name).then(function () {
+            col.list = list; persist(); col.render();
+            toast('已提交，约几十秒后线上对所有人可见 ✓', 5000);
+          });
+        }).catch(function (err) { toast('提交失败：' + err.message, 5000); });
+      } else {
+        col.list.push(item); persist(); col.render();
+        toast('已添加（本地预览）。配置「作者设置」后才会公开。', 5000);
+      }
+    };
+    col.remove = function (id) {
+      if (cfgReady()) {
+        toast('正在删除…');
+        ghGet(opts.path).then(function (res) {
+          var list = res.list.filter(function (it) { return it.id !== id; });
+          return ghPut(opts.path, list, res.sha, 'Delete ' + opts.commit).then(function () {
+            col.list = list; persist(); col.render();
+            toast('已删除，约几十秒后线上更新 ✓');
+          });
+        }).catch(function (err) { toast('删除失败：' + err.message, 5000); });
+      } else {
+        col.list = col.list.filter(function (it) { return it.id !== id; });
+        persist(); col.render();
+      }
+    };
+    return col;
+  }
+
+  // AI 知识库 与 个人文章发表，两套相同结构的集合
+  var insightsCol = createCollection({
+    title: '提交心得', nameLabel: '心得名称', introLabel: '心得简介', linkLabel: '网页链接',
+    namePh: '例如：Harness 入门讲解', introPh: '一句话介绍这条心得', linkPh: 'https://example.com/article',
+    openLabel: '打开网页 →', commit: 'insight', path: 'data.json', localKey: 'zhyl_insights_local',
+    grid: document.getElementById('insightGrid'), empty: document.getElementById('insightEmpty')
+  });
+  var articlesCol = createCollection({
+    title: '添加文章', nameLabel: '文章标题', introLabel: '文章简介', linkLabel: '文章链接',
+    namePh: '例如：我对 AI 产品的思考', introPh: '一句话介绍这篇文章', linkPh: 'https://mp.weixin.qq.com/... 或其他平台链接',
+    openLabel: '阅读文章 →', commit: 'article', path: 'articles.json', localKey: 'zhyl_articles_local',
+    grid: document.getElementById('articleGrid'), empty: document.getElementById('articleEmpty')
+  });
+
+  document.getElementById('addInsightBtn').addEventListener('click', function () { openForm(insightsCol); });
+  document.getElementById('addArticleBtn').addEventListener('click', function () { openForm(articlesCol); });
+
+  insightsCol.load();
+  articlesCol.load();
+
+  // ===== 表单提交（共用，写入当前集合）=====
+  fSubmit.addEventListener('click', function () {
+    var col = activeCol; if (!col) return;
+    var name = fName.value.trim(), intro = fIntro.value.trim(), link = fLink.value.trim();
+    if (!name || !intro || !link) { fError.textContent = '请填写完整：标题、简介、链接。'; return; }
+
+    var url = normalizeUrl(link);
+    if (!isValidUrl(url)) { fError.textContent = '提交失败：链接格式无效。'; return; }
+
+    fError.textContent = '';
+
+    // 本地 file:// 打开时，浏览器禁止网络探测，只按格式校验放行；
+    // 线上 http(s) 运行时才做真正的可达性检测。
+    if (location.protocol === 'file:') {
+      col.add(name, intro, url); closeForm();
+      return;
+    }
+
+    fSubmit.disabled = true; fSubmit.textContent = '校验中…';
+    probeUrl(url).then(function (ok) {
+      fSubmit.disabled = false; fSubmit.textContent = '提交';
+      if (!ok) { fError.textContent = '提交失败：该链接无法访问，请检查后重试。'; return; }
+      col.add(name, intro, url); closeForm();
+    });
+  });
+
+  // Esc 关闭表单 / 设置 / 删除确认弹窗
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      cardModal.classList.remove('show');
+      settingsModal.classList.remove('show');
+      confirmModal.classList.remove('show');
+    }
+  });
+</script>
+</body>
+</html>
